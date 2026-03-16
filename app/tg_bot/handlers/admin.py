@@ -108,24 +108,26 @@ class PDFResultsTable:
         self.pdf.set_font('Arial', '', 12)
 
     def create_columns_for_table(self):
+        self.pdf.cell(self.COLUMN_WIDTH, self.ROW_HEIGHT, 'No', self.BORDER)
         self.pdf.cell(self.COLUMN_WIDTH, self.ROW_HEIGHT, 'First Name', self.BORDER)
         self.pdf.cell(self.COLUMN_WIDTH, self.ROW_HEIGHT, 'Last Name', self.BORDER)
         self.pdf.cell(self.COLUMN_WIDTH, self.ROW_HEIGHT, 'Score', self.BORDER)
         self.pdf.ln(10)
 
-    async def draw_one_line_of_data(self, attempt):
+    async def draw_one_line_of_data(self, number, attempt):
         user_data = await get_user_data(user_id=attempt.user_id, async_session_maker=self.session)
+        self.pdf.cell(self.COLUMN_WIDTH, self.ROW_HEIGHT, str(number), self.BORDER)
         self.pdf.cell(self.COLUMN_WIDTH, self.ROW_HEIGHT, user_data.username, self.BORDER)
         self.pdf.cell(self.COLUMN_WIDTH, self.ROW_HEIGHT, user_data.lastname, self.BORDER)
         self.pdf.cell(self.COLUMN_WIDTH, self.ROW_HEIGHT, str(attempt.score), self.BORDER)
         self.pdf.ln(10)
 
     async def draw_all_user_data(self):
-        for user in self.data:
-            await self.draw_one_line_of_data(user)
+        for number, user in enumerate(self.data, start=1):
+            await self.draw_one_line_of_data(number, user)
 
     def prepare_pdf_output(self):
-        self.result_file = BufferedInputFile(self.pdf.output('S').encode('latin-1'), filename='results.pdf')
+        self.result_file = BufferedInputFile(self.pdf.output(dest='S'), filename='results.pdf')
 
     async def create_pdf_table(self):
         self.pdf.add_page()
@@ -203,7 +205,7 @@ async def send_results(test_id, callback: CallbackQuery, session: AsyncSession):
     results_table.session = session
     results_table.file_name = 'results.pdf'
     results_table.data = results
-    results_table.prepare_pdf_output()
+    await results_table.create_pdf_table()
 
     results_file = results_table.result_file
 
@@ -241,7 +243,7 @@ async def stop_test(callback: CallbackQuery) -> None:
                             session=callback.bot.async_session_maker,
                             redis=callback.bot.redis,
                             bot=callback.bot)
-    await send_results(test_id=test_id, callback=callback, session=callback.bot.async_session_maker)
+    await send_results(test_id=16, callback=callback, session=callback.bot.async_session_maker)
 
 
 @admin_router.callback_query(F.data.split('::')[0] == 'get_results_test')
@@ -256,7 +258,7 @@ async def get_results_test(callback: CallbackQuery) -> None:
         pass
     except TelegramBadRequest:
         pass
-    await send_results(test_id=test_id, callback=callback, session=callback.bot.async_session_maker)
+    await send_results(test_id=16, callback=callback, session=callback.bot.async_session_maker)
 
 
 @admin_router.callback_query(F.data.split('::')[0] == 'allow_admin')
