@@ -41,3 +41,4 @@ psycopg2-binary
 reportlab
 pypdf2
 booktype
+fpdf2
