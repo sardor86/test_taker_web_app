@@ -243,7 +243,7 @@ async def stop_test(callback: CallbackQuery) -> None:
                             session=callback.bot.async_session_maker,
                             redis=callback.bot.redis,
                             bot=callback.bot)
-    await send_results(test_id=16, callback=callback, session=callback.bot.async_session_maker)
+    await send_results(test_id=test_id, callback=callback, session=callback.bot.async_session_maker)
 
 
 @admin_router.callback_query(F.data.split('::')[0] == 'get_results_test')
@@ -258,7 +258,7 @@ async def get_results_test(callback: CallbackQuery) -> None:
         pass
     except TelegramBadRequest:
         pass
-    await send_results(test_id=16, callback=callback, session=callback.bot.async_session_maker)
+    await send_results(test_id=test_id, callback=callback, session=callback.bot.async_session_maker)
 
 
 @admin_router.callback_query(F.data.split('::')[0] == 'allow_admin')
