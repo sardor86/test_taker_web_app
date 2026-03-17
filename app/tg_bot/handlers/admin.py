@@ -86,6 +86,7 @@ class Certificate:
         self.canvas.save()
         self.prepare_overlay_for_pdf_file()
         self.prepare_certificate_file()
+        self.write_certificate_file()
 
 
 class PDFResultsTable:
