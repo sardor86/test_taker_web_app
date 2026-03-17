@@ -29,10 +29,11 @@ class CertificateConstants:
         self.FONT_PATH = PATH / 'app/tg_bot/certificates/DejaVuSans-Bold.ttf'
         pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', self.FONT_PATH))
 
-        self.CERTIFICATE_LIST = []
-        for pdf_file_number in range(4):
-            with open(PATH / f'app/tg_bot/certificates/{pdf_file_number}.pdf', 'rb') as file:
-                self.CERTIFICATE_LIST.append(PdfReader(file).pages[0])
+        self.CERTIFICATE_FILE_LIST = [ open(PATH / 'app/tg_bot/certificates/0.pdf', 'rb'),
+                                       open(PATH / 'app/tg_bot/certificates/1.pdf', 'rb'),
+                                       open(PATH / 'app/tg_bot/certificates/2.pdf', 'rb'),
+                                       open(PATH / 'app/tg_bot/certificates/3.pdf', 'rb'), ]
+        self.CERTIFICATE_LIST = [PdfReader(file).pages[0] for file in self.CERTIFICATE_FILE_LIST]
 
         self.PAGE_SIZE_BY_X = 595
         self.PAGE_SIZE_BY_Y = 842
