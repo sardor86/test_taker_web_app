@@ -24,34 +24,40 @@ from app.config import PATH
 admin_router = Router()
 
 
-class Certificate:
+class CertificateConstants:
     def __init__(self):
-        font_path = PATH / 'app/tg_bot/certificates/DejaVuSans-Bold.ttf'
-        pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', font_path))
+        self.FONT_PATH = PATH / 'app/tg_bot/certificates/DejaVuSans-Bold.ttf'
+        pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', self.FONT_PATH))
 
-        self.CERTIFICATE_LIST = [
-            PdfReader(open(PATH / 'app/tg_bot/certificates/0.pdf', 'rb')).pages[0],
-            PdfReader(open(PATH / 'app/tg_bot/certificates/1.pdf', 'rb')).pages[0],
-            PdfReader(open(PATH / 'app/tg_bot/certificates/2.pdf', 'rb')).pages[0],
-            PdfReader(open(PATH / 'app/tg_bot/certificates/3.pdf', 'rb')).pages[0],
-        ]
+        self.CERTIFICATE_LIST = []
+        for pdf_file_number in range(4):
+            with open(PATH / f'app/tg_bot/certificates/{pdf_file_number}.pdf', 'rb') as file:
+                self.CERTIFICATE_LIST.append(PdfReader(file).pages[0])
+
         self.PAGE_SIZE_BY_X = 595
         self.PAGE_SIZE_BY_Y = 842
+        self.TEXT_CENTER_WIDTH = 549
 
         self.FONT_NAME = 'DejaVuSans-Bold'
         self.FONT_SIZE = 28
         self.TEXT_PLACE_Y = 410
-        self.TEXT_PLACE_X = None
+
+
+class Certificate:
+    def __init__(self, certificate_constants: CertificateConstants):
+        self.certificate_constants = certificate_constants
 
         self.certificate_number = None
         self.full_name = None
+        self.result_file = None
 
         self.overlay = BytesIO()
         self.certificate = BytesIO()
-        self.canvas = canvas.Canvas(self.overlay, pagesize=(self.PAGE_SIZE_BY_X, self.PAGE_SIZE_BY_Y))
+        self.canvas = canvas.Canvas(self.overlay,
+                                    pagesize=(self.certificate_constants.PAGE_SIZE_BY_X,
+                                              self.certificate_constants.PAGE_SIZE_BY_Y))
         self.overlay_pdf = None
         self.writer = PdfWriter()
-        self.result_file = None
 
     def set_certificate_type_by_place(self, place: int):
         if place <= 2:
@@ -59,34 +65,37 @@ class Certificate:
         else:
             self.certificate_number = 3
 
-    def set_text_place_x(self):
-        text_width = pdfmetrics.stringWidth(self.full_name, self.FONT_NAME, self.FONT_SIZE)
-        self.TEXT_PLACE_X = (549 - text_width) / 2
+    def _get_text_place_x(self):
+        text_width = pdfmetrics.stringWidth(self.full_name,
+                                            self.certificate_constants.FONT_NAME,
+                                            self.certificate_constants.FONT_SIZE)
+        return (self.certificate_constants.TEXT_CENTER_WIDTH - text_width) / 2
 
-    def prepare_text_of_full_name(self):
-        self.set_text_place_x()
-        self.canvas.setFont(self.FONT_NAME, self.FONT_SIZE)
-        self.canvas.drawString(self.TEXT_PLACE_X, self.TEXT_PLACE_Y, self.full_name)
+    def _prepare_text_of_full_name(self):
+        self.canvas.setFont(self.certificate_constants.FONT_NAME, self.certificate_constants.FONT_SIZE)
+        self.canvas.drawString(self._get_text_place_x(),
+                               self.certificate_constants.TEXT_PLACE_Y,
+                               self.full_name)
 
-    def prepare_overlay_for_pdf_file(self):
+    def _prepare_overlay_for_pdf_file(self):
         self.overlay.seek(0)
         self.overlay_pdf = PdfReader(self.overlay)
 
-    def prepare_certificate_file(self):
-        page = copy.copy(self.CERTIFICATE_LIST[self.certificate_number])
+    def _prepare_certificate_file(self):
+        page = copy.copy(self.certificate_constants.CERTIFICATE_LIST[self.certificate_number])
         page.merge_page(self.overlay_pdf.pages[0])
         self.writer.add_page(page)
 
-    def write_certificate_file(self):
+    def _write_certificate_file(self):
         self.writer.write(self.certificate)
         self.result_file = BufferedInputFile(self.certificate.getvalue(), filename='certificate.pdf')
 
     def prepare_certificate(self):
-        self.prepare_text_of_full_name()
+        self._prepare_text_of_full_name()
         self.canvas.save()
-        self.prepare_overlay_for_pdf_file()
-        self.prepare_certificate_file()
-        self.write_certificate_file()
+        self._prepare_overlay_for_pdf_file()
+        self._prepare_certificate_file()
+        self._write_certificate_file()
 
 
 class PDFResultsTable:
@@ -169,12 +178,14 @@ async def send_certificates(test_id, bot: Bot, session: AsyncSession, redis: Red
     results = (await get_all_users_results(test_id,
                                            async_session_maker=session))
     test_info = await get_test_info(test_id, async_session_maker=session, redis=redis)
-    certificate = Certificate()
+
+    certificate_constants = CertificateConstants()
 
     for i, attempt in enumerate(results):
         user_data = await get_user_data(user_id=attempt.user_id, async_session_maker=session)
         full_name = f'{user_data.lastname} {user_data.username}'
 
+        certificate = Certificate(certificate_constants)
         certificate.full_name = full_name
         certificate.set_certificate_type_by_place(i)
         certificate.prepare_certificate()
