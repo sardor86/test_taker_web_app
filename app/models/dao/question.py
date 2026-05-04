@@ -8,8 +8,8 @@ from pydantic import BaseModel
 class QuestionData(BaseModel):
     question_number: int
     question_type: AnswerTypeEnum
-    correct_answer_id: int
-    test_id: int
+    correct_answer_id: int = None
+    test_id: int = None
     score: float
 
 

@@ -9,6 +9,6 @@ class CorrectAnswerData(BaseModel):
     answer_type: AnswerTypeEnum
     answer: str
 
-class QuestionDao(BaseDAO):
+class CorrectAnswerDao(BaseDAO):
     model = CorrectAnswer
 

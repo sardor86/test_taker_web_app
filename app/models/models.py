@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import String, ForeignKey, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.database import Base, CloseAnswerEnum, AnswerTypeEnum
+from app.models.database import Base, AnswerTypeEnum
 
 
 class Test(Base):
@@ -14,22 +14,23 @@ class Test(Base):
     is_ended: Mapped[bool] = mapped_column(default=False)
 
     test_attempt: Mapped[list['TestAttempt']] = relationship(
-        'test_attempt',
+        'TestAttempt',
         back_populates='test',
-        cascade="all, delete-orphan"
+        uselist=True
     )
 
     user: Mapped['User'] = relationship(
-        'user',
+        'User',
         back_populates='test',
         uselist=False,
         lazy='joined'
     )
 
     question: Mapped[list['Question']] = relationship(
-        'question',
+        'Question',
         back_populates='test',
-        cascade='all, delete-orphan'
+        cascade='all, delete-orphan',
+        uselist=True
     )
 
     def __repr__(self):
@@ -44,21 +45,21 @@ class User(Base):
     is_creator: Mapped[bool] = mapped_column(default=False)
 
     test_attempt: Mapped['TestAttempt'] = relationship(
-        'test_attempt',
+        'TestAttempt',
         back_populates='user',
         uselist=False,
         lazy='joined',
     )
 
     test: Mapped['Test'] = relationship(
-        'test',
+        'Test',
         back_populates='user',
         uselist=False,
         lazy='joined'
     )
 
     def __repr__(self):
-        return f'<User {self.user_id}>'
+        return f'<User {self.tg_user_id}>'
 
 
 class TestAttempt(Base):
@@ -70,21 +71,23 @@ class TestAttempt(Base):
     completed_at: Mapped[datetime]
 
     user: Mapped['User'] = relationship(
-        'user',
+        'User',
         back_populates='test_attempt',
         uselist=False,
         lazy='joined',
     )
 
     user_answer: Mapped[list['UserAnswer']] = relationship(
-        "user_answer",
+        'UserAnswer',
         back_populates="test_attempt",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
+        uselist=True
     )
 
-    test: Mapped['TestAttempt'] = relationship(
-        'test',
+    test: Mapped['Test'] = relationship(
+        'Test',
         back_populates='test_attempt',
+        uselist=False
     )
 
     def __repr__(self):
@@ -99,19 +102,19 @@ class Question(Base):
     score: Mapped[float] = mapped_column(default=1.0)
 
     user_answer: Mapped['UserAnswer'] = relationship(
-        'user_answer',
+        'UserAnswer',
         back_populates='question',
         uselist=False,
         lazy='joined',
     )
 
     test: Mapped['Test'] = relationship(
-        'test',
+        'app.models.models.Test',
         back_populates='question',
     )
 
     correct_answer: Mapped['CorrectAnswer'] = relationship(
-        'correct_answer',
+        'CorrectAnswer',
         back_populates='question',
         uselist=False,
         lazy='joined',
@@ -126,7 +129,7 @@ class CorrectAnswer(Base):
     answer: Mapped[str] = mapped_column(nullable=False)
 
     question: Mapped['Question'] = relationship(
-        'question',
+        'Question',
         back_populates='correct_answer',
         uselist=False,
         lazy='joined',
@@ -135,6 +138,7 @@ class CorrectAnswer(Base):
     def __repr__(self):
         return f'<CorrectAnswer correct answer={self.answer}>'
 
+
 class UserAnswer(Base):
     attempt_id: Mapped[int] = mapped_column(ForeignKey('testattempts.id'))
     question_id: Mapped[int] = mapped_column(ForeignKey('questions.id'))
@@ -142,16 +146,16 @@ class UserAnswer(Base):
     is_correct: Mapped[bool] = mapped_column(nullable=False)
 
     test_attempt: Mapped['TestAttempt'] = relationship(
-        'test_attempt',
+        'TestAttempt',
         back_populates='user_answer',
     )
 
     question: Mapped['Question'] = relationship(
-        'question',
+        'Question',
         back_populates='user_answer',
         uselist=False,
         lazy='joined',
     )
 
     def __repr__(self):
-        return f'<UserAnswer attempt_id={self.attempt_id} question={self.answer_id}>'
+        return f'<UserAnswer attempt_id={self.attempt_id} question={self.question_id}>'

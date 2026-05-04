@@ -7,11 +7,11 @@ from pydantic import BaseModel
 
 class TestData(BaseModel):
     test_name: str
-    user_id: int
+    user_id: int = None
     test_time: int
     start_time: datetime.datetime
     is_ended: bool
 
 
-class TestDAO(BaseDAO):
+class TestDao(BaseDAO):
     model = Test
