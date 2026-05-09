@@ -30,7 +30,8 @@ class Test(Base):
         'Question',
         back_populates='test',
         cascade='all, delete-orphan',
-        uselist=True
+        uselist=True,
+        lazy='joined'
     )
 
     def __repr__(self):
@@ -81,7 +82,8 @@ class TestAttempt(Base):
         'UserAnswer',
         back_populates="test_attempt",
         cascade="all, delete-orphan",
-        uselist=True
+        uselist=True,
+        lazy='joined',
     )
 
     test: Mapped['Test'] = relationship(
@@ -97,7 +99,7 @@ class TestAttempt(Base):
 class Question(Base):
     question_number: Mapped[int] = mapped_column(nullable=False)
     question_type: Mapped[AnswerTypeEnum] = mapped_column(nullable=False)
-    correct_answer_id: Mapped[int] = mapped_column(ForeignKey('correctanswers.id'))
+    answer: Mapped[str] = mapped_column(nullable=False)
     test_id: Mapped[int] = mapped_column(ForeignKey('tests.id'))
     score: Mapped[float] = mapped_column(default=1.0)
 
@@ -113,30 +115,8 @@ class Question(Base):
         back_populates='question',
     )
 
-    correct_answer: Mapped['CorrectAnswer'] = relationship(
-        'CorrectAnswer',
-        back_populates='question',
-        uselist=False,
-        lazy='joined',
-    )
-
     def __repr__(self):
         return f'<Question question_number={self.question_number} test={self.test_id}>'
-
-
-class CorrectAnswer(Base):
-    answer_type: Mapped[AnswerTypeEnum] = mapped_column(String(200), nullable=False)
-    answer: Mapped[str] = mapped_column(nullable=False)
-
-    question: Mapped['Question'] = relationship(
-        'Question',
-        back_populates='correct_answer',
-        uselist=False,
-        lazy='joined',
-    )
-
-    def __repr__(self):
-        return f'<CorrectAnswer correct answer={self.answer}>'
 
 
 class UserAnswer(Base):
