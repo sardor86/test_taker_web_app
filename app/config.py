@@ -58,6 +58,4 @@ def load_config(path: Path) -> Settings:
         CHANNELS_ID=env.list('CHANNELS_ID'),
     )
 
-    config.get_db_url()
-
     return config
