@@ -1,6 +1,8 @@
 from functools import wraps
 
 from typing import List, Any, Dict
+
+from pydantic import BaseModel
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -29,8 +31,8 @@ class BaseDAO:
         session.add(new_instance)
         return new_instance
 
-    async def add_many(self, session: AsyncSession, instances: List[Dict[str, Any]]):
-        new_instances = [self.model(**values) for values in instances]
+    async def add_many(self, instances: List[BaseModel], session: AsyncSession):
+        new_instances = [self.model(**values.model_dump()) for values in instances]
         session.add_all(new_instances)
         return new_instances
 

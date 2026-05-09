@@ -1,7 +1,8 @@
 from app.models.dao.base import BaseDAO
 from app.models.models import User
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+
 
 class UserData(BaseModel):
     username: str
@@ -9,6 +10,8 @@ class UserData(BaseModel):
     city: str
     tg_user_id: int
     is_creator: bool
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserDao(BaseDAO):
