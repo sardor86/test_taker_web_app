@@ -64,3 +64,7 @@ venv.bak/
 /app/forum/__init__.py
 
 .idea/
+
+alembic.ini
+migration
+
