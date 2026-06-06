@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uz">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jahongir Academy - Результаты</title>
+    <title>Jahongir Academy - Natijalar</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    
+
     <link rel="stylesheet" href="/app/static/results/static/css/results.css">
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h1 id="test-title">Загрузка...</h1>
-        <div class="subtitle">Результаты участников</div>
+        <h1 id="test-title">Yuklanmoqda...</h1>
+        <div class="subtitle">Ishtirokchilar natijalari</div>
     </div>
 
     <div class="filter-section" id="filter-wrapper"></div>
@@ -49,16 +49,16 @@
     <div id="loader" class="loader">
         <i class="fas fa-spinner fa-spin"></i>
     </div>
-    
+
     <div class="results-list" id="results-container" style="display: none;"></div>
 
     <div class="pagination">
         <button class="page-btn" id="prev-btn" onclick="changePage(-1)">
-            <i class="fas fa-chevron-left"></i> Назад
+            <i class="fas fa-chevron-left"></i> Orqaga
         </button>
-        <span class="page-info" id="page-info">Стр. 1 из 1</span>
+        <span class="page-info" id="page-info">Sahifa: 1 / 1</span>
         <button class="page-btn" id="next-btn" onclick="changePage(1)">
-            Вперед <i class="fas fa-chevron-right"></i>
+            Oldinga <i class="fas fa-chevron-right"></i>
         </button>
     </div>
 </div>
