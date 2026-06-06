@@ -1,6 +1,3 @@
-// ==========================================
-// URL ID PARSER VA CHЕKLOVLAR
-// ==========================================
 
 function getTestIdFromUrl() {
     const pathSegments = window.location.pathname.split('/');
@@ -22,33 +19,40 @@ let currentPage = 1;
 let totalPages = 1;
 const LIMIT = 100;
 
-// ==========================================
-// YORDAMCHI FUNKSIYALAR (UTILITIES)
-// ==========================================
 
-// Vaqtni GMT+5 formatiga o'tkazish va shakllantirish: YYYY.MM.DD HH:MM:SS
 function formatDateTime(dateString) {
     if (!dateString) return '';
-    const d = new Date(dateString);
 
-    // Server vaqtiga (GMT+0) 5 soat qo'shamiz (O'zbekiston vaqti)
-    d.setHours(d.getHours() + 5);
+    if (!dateString.endsWith('Z') && !dateString.includes('+')) {
+        dateString += 'Z';
+    }
+
+    let rawMs = Date.parse(dateString);
+    if (isNaN(rawMs)) return '';
+
+    const uzbMs = rawMs + (5 * 60 * 60 * 1000);
+    const d = new Date(uzbMs);
 
     const pad = (num) => String(num).padStart(2, '0');
-    return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+
+    const year = d.getUTCFullYear();
+    const month = pad(d.getUTCMonth() + 1);
+    const day = pad(d.getUTCDate());
+    const hours = pad(d.getUTCHours());
+    const minutes = pad(d.getUTCMinutes());
+    const seconds = pad(d.getUTCSeconds());
+
+    return `${year}.${month}.${day} ${hours}:${minutes}:${seconds}`;
 }
 
-// Avatar uchun bosh harflarni olish
 function getInitials(name, lastname) {
     return `${name ? name[0] : ''}${lastname ? lastname[0] : ''}`.toUpperCase() || '?';
 }
 
-// Brauzer CSS animatsiyasini qayta ishga tushirish uchun
 function forceTriggerDOMReflow(element) {
     void element.offsetWidth;
 }
 
-// Konfetti salyuti (Kahoot uslubida)
 function runKahootConfetti() {
     confetti({
         particleCount: 140,
@@ -64,9 +68,6 @@ function runKahootConfetti() {
     }, 400);
 }
 
-// ==========================================
-// ASOSIY YUKLASH VA RЕNDЕRING LOGIKASI
-// ==========================================
 
 async function loadResults(page) {
     const loader = document.getElementById('loader');
@@ -111,7 +112,6 @@ async function loadResults(page) {
             t2.classList.remove('animate-place-2');
             t3.classList.remove('animate-place-3');
 
-            // 3-o'rin
             if(participants[2]) {
                 t3.style.visibility = 'visible';
                 document.getElementById('name-3').innerText = `${participants[2].username} ${participants[2].lastname}`;
@@ -121,7 +121,6 @@ async function loadResults(page) {
                 t3.classList.add('animate-place-3');
             } else { t3.style.visibility = 'hidden'; }
 
-            // 2-o'rin
             if(participants[1]) {
                 t2.style.visibility = 'visible';
                 document.getElementById('name-2').innerText = `${participants[1].username} ${participants[1].lastname}`;
@@ -131,7 +130,6 @@ async function loadResults(page) {
                 t2.classList.add('animate-place-2');
             } else { t2.style.visibility = 'hidden'; }
 
-            // 1-o'rin
             if(participants[0]) {
                 t1.style.visibility = 'visible';
                 document.getElementById('name-1').innerText = `${participants[0].username} ${participants[0].lastname}`;
@@ -173,7 +171,7 @@ async function loadResults(page) {
         updatePagination();
 
     } catch (error) {
-        console.error("Xatolik yuz berdi:", error);
+        console.error("Xatolik:", error);
         document.getElementById('test-title').innerText = "Ma'lumot yuklashda xatolik";
         loader.style.display = 'none';
     }
