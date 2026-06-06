@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jahongir Academy - Результаты</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <link rel="stylesheet" href="/app/static/results/static/css/results.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1 id="test-title">Загрузка...</h1>
+        <div class="subtitle">Результаты участников</div>
+    </div>
+
+    <div class="filter-section" id="filter-wrapper"></div>
+
+    <div class="podium" id="podium-container" style="display: none;">
+        <div class="podium-place place-2" id="top-2">
+            <div class="avatar-wrapper">
+                <span class="medal">🥈</span>
+                <div class="avatar" id="avatar-2">-</div>
+            </div>
+            <div class="name" id="name-2">-</div>
+            <div class="score" id="score-2">-</div>
+        </div>
+        <div class="podium-place place-1" id="top-1">
+            <div class="avatar-wrapper">
+                <span class="medal">🥇</span>
+                <div class="avatar" id="avatar-1">-</div>
+            </div>
+            <div class="name" id="name-1">-</div>
+            <div class="score" id="score-1">-</div>
+        </div>
+        <div class="podium-place place-3" id="top-3">
+            <div class="avatar-wrapper">
+                <span class="medal">🥉</span>
+                <div class="avatar" id="avatar-3">-</div>
+            </div>
+            <div class="name" id="name-3">-</div>
+            <div class="score" id="score-3">-</div>
+        </div>
+    </div>
+
+    <div id="loader" class="loader">
+        <i class="fas fa-spinner fa-spin"></i>
+    </div>
+    
+    <div class="results-list" id="results-container" style="display: none;"></div>
+
+    <div class="pagination">
+        <button class="page-btn" id="prev-btn" onclick="changePage(-1)">
+            <i class="fas fa-chevron-left"></i> Назад
+        </button>
+        <span class="page-info" id="page-info">Стр. 1 из 1</span>
+        <button class="page-btn" id="next-btn" onclick="changePage(1)">
+            Вперед <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+</div>
+
+<script src="/app/static/results/static/js/results.js"></script>
+</body>
+</html>

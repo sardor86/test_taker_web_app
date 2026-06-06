@@ -15,7 +15,7 @@ from PyPDF2 import PdfReader, PdfWriter
 
 
 from app.models.dao import (stop_testing,
-                            get_all_users_results,
+                            get_all_test_results,
                             get_user_data,
                             get_test_info, get_test_answers,
                             add_new_admin)
@@ -176,7 +176,7 @@ async def test_results_message_parts(test_id: int, session: AsyncSession, redis:
 
 
 async def send_certificates(test_id, bot: Bot, session: AsyncSession, redis: Redis):
-    results = (await get_all_users_results(test_id,
+    results = (await get_all_test_results(test_id,
                                            async_session_maker=session))
     test_info = await get_test_info(test_id, async_session_maker=session, redis=redis)
 
@@ -212,22 +212,8 @@ async def send_certificates(test_id, bot: Bot, session: AsyncSession, redis: Red
             pass
 
 
-async def send_results(test_id, callback: CallbackQuery, session: AsyncSession):
-    results = await get_all_users_results(test_id, async_session_maker=session)
-    results_table = PDFResultsTable()
-    results_table.session = session
-    results_table.file_name = 'results.pdf'
-    results_table.data = results
-    await results_table.create_pdf_table()
-
-    results_file = results_table.result_file
-
-    try:
-        await callback.bot.send_document(chat_id=callback.message.chat.id, document=results_file)
-    except TelegramForbiddenError:
-        pass
-    except TelegramBadRequest:
-        pass
+async def send_results(test_id, callback: CallbackQuery):
+    await callback.bot.send_message(callback.from_user.id, f'https://jahongiracademy.uz/results/{test_id}')
 
 @admin_router.callback_query(F.data.split('::')[0] == 'stop_test')
 async def stop_test(callback: CallbackQuery) -> None:
@@ -256,7 +242,7 @@ async def stop_test(callback: CallbackQuery) -> None:
                             session=callback.bot.async_session_maker,
                             redis=callback.bot.redis,
                             bot=callback.bot)
-    await send_results(test_id=test_id, callback=callback, session=callback.bot.async_session_maker)
+    await send_results(test_id=test_id, callback=callback)
 
 
 @admin_router.callback_query(F.data.split('::')[0] == 'get_results_test')
@@ -271,7 +257,7 @@ async def get_results_test(callback: CallbackQuery) -> None:
         pass
     except TelegramBadRequest:
         pass
-    await send_results(test_id=test_id, callback=callback, session=callback.bot.async_session_maker)
+    await send_results(test_id=test_id, callback=callback)
 
 
 @admin_router.callback_query(F.data.split('::')[0] == 'allow_admin')

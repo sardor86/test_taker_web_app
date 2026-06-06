@@ -53,9 +53,19 @@ async def get_all_test_attempts(user_id: int, session: AsyncSession):
     return test
 
 @connection
-async def get_all_users_results(test_id: int, session: AsyncSession):
-    results = await TestDAO.get_all_results(test_id=test_id, session=session)
+async def get_all_users_results(test_id: int, session: AsyncSession, page: int = 1):
+    results = await TestDAO.get_all_results(test_id=test_id, session=session, page=page)
     return results
+
+@connection
+async def get_all_test_results(test_id: int, session: AsyncSession):
+    results = await TestDAO.get_all_test_results(test_id=test_id, session=session)
+    return results
+
+@connection
+async def get_users_number(test_id: int, session: AsyncSession):
+    result = await TestDAO.get_users_number(test_id=test_id, session=session)
+    return result
 
 
 @connection

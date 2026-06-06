@@ -1,8 +1,8 @@
 import datetime
 from typing import Sequence
 
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc
+from sqlalchemy.ext.asyncio import AsyncSession, result
+from sqlalchemy import select, desc, asc, func
 
 from app.models.dao.base import BaseDAO
 from app.models.models import Test, User, TestAttempt, Answer, UserAnswer, TestCreator
@@ -71,10 +71,37 @@ class TestDAO(BaseDAO):
         return True
 
     @classmethod
-    async def get_all_results(cls, session: AsyncSession, test_id: int) -> Sequence[TestAttempt]:
-        stmt = select(TestAttempt).where(TestAttempt.test_id == test_id).order_by(desc(TestAttempt.score)).order_by(TestAttempt.created_at)
+    async def get_all_test_results(cls, session: AsyncSession, test_id: int):
+        stmt = (select(TestAttempt).
+                where(TestAttempt.test_id == test_id).
+                order_by(desc(TestAttempt.score),
+                         asc(TestAttempt.created_at)))
         result = (await session.execute(stmt)).scalars().all()
         return result
+
+    @classmethod
+    async def get_all_results(cls, session: AsyncSession, test_id: int, page: int = 1):
+        offset = (page - 1) * 100
+        stmt = (select(
+            TestAttempt.score,
+            TestAttempt.created_at,
+            User.username,
+            User.lastname).
+                join(TestAttempt, TestAttempt.user_id == User.id).
+                where(TestAttempt.test_id == test_id).
+                order_by(desc(TestAttempt.score),
+                         asc(TestAttempt.created_at)).
+                offset(offset).
+                limit(100))
+        result = (await session.execute(stmt)).all()
+        return result
+
+    @classmethod
+    async def get_users_number(cls, session: AsyncSession, test_id) -> int:
+        stmt = select(func.count(TestAttempt.id)).where(TestAttempt.test_id == test_id)
+        result = await session.execute(stmt)
+        total_count = result.scalar() or 1
+        return total_count
 
 
 class UserDAO(BaseDAO):

@@ -2,6 +2,7 @@ import datetime
 from contextlib import asynccontextmanager
 from zoneinfo import ZoneInfo
 
+import pydantic
 from aiogram.types import Update
 from aiogram.exceptions import TelegramForbiddenError, TelegramBadRequest
 from fastapi import FastAPI, Request
@@ -12,10 +13,15 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from redis.asyncio import Redis
 
 from app.config import load_config, PATH
-from app.models.dao import get_test_info, pass_test, add_full_test, check_test_attempt, check_admin
+from app.models.dao import (get_test_info,
+                            pass_test,
+                            add_full_test,
+                            check_test_attempt,
+                            get_all_users_results,
+                            get_users_number)
 from app.pydantic_models import SubmitTest, CreateTest
 from app.tg_bot.bot import bot, dp, bot_preparation
-from app.tg_bot.keyboards.callback import test_controls_keyboard, allow_admin_keyboard
+from app.tg_bot.keyboards.callback import test_controls_keyboard
 
 
 # app preparation
@@ -179,21 +185,6 @@ async def create_test(test_data: CreateTest):
             'error': 'User ID talab qilinadi'
         }
 
-    # if not await check_admin(user_id=test_data.user_id, async_session_maker=app.async_session_maker):
-    #     user_info = await bot.get_chat(chat_id=test_data.user_id)
-    #     await bot.send_message(chat_id=app.config.ADMIN_ID,
-    #                            text=f'{user_info.full_name} sizdan test yaratish uchun \n'
-    #                                 f'ruhsat so\'ralmoqda\n',
-    #                            reply_markup=allow_admin_keyboard(test_data.user_id)
-    #                            )
-    #     await bot.send_message(chat_id=test_data.user_id,
-    #                            text='Siz test yarata olmaysiz, lekin sizning so\'rovingiz adminga jo\'natildi')
-    #
-    #     return {
-    #         'created': False,
-    #         'error': 'Siz test yarata olmaysiz, lekin sizning so\'rovingiz adminga jo\'natildi'
-    #     }
-
     try:
         test_data.start_time = datetime.datetime.strptime(test_data.start_time, '%Y-%m-%d %H:%M:%S.%f')
         test_data.end_time = datetime.datetime.strptime(test_data.end_time, '%Y-%m-%d %H:%M:%S.%f')
@@ -224,3 +215,40 @@ async def create_test(test_data: CreateTest):
         'created': True,
         'errors': None
     }
+
+class Result(pydantic.BaseModel):
+    username: str
+    lastname: str
+    score: float
+    created_at: datetime.datetime
+
+    model_config = pydantic.ConfigDict(from_attributes=True)
+
+class UserResults(pydantic.BaseModel):
+    test_name: str
+    total_pages: int
+    results: list[Result]
+
+@app.get('/api/results/{test_id}')
+async def get_test_result(test_id: int, page: int = 1):
+    test_info = await get_test_info(test_id=test_id,
+                                    async_session_maker=app.async_session_maker,
+                                    redis=app.redis)
+    results = await get_all_users_results(test_id=test_id,
+                                          page=page,
+                                          async_session_maker=app.async_session_maker)
+    total_number = await get_users_number(test_id=test_id,
+                                          async_session_maker=app.async_session_maker)
+
+    total_page = (total_number + 99) // 100
+
+    return UserResults(
+        test_name=test_info['test_name'],
+        total_pages=total_page,
+        results=results
+    )
+
+
+@app.get('/results/{test_id}')
+async def get_test_result(request: Request):
+    return app.templates.TemplateResponse(name='results.html', context={'request': request})
