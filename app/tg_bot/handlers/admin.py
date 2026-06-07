@@ -98,57 +98,6 @@ class Certificate:
         self._prepare_certificate_file()
         self._write_certificate_file()
 
-
-class PDFResultsTable:
-    def __init__(self):
-        self.COLUMN_WIDTH = 40
-        self.ROW_HEIGHT = 10
-        self.BORDER = 1
-
-        self.pdf = FPDF()
-
-        self.session = None
-        self.data = None
-        self.file_name = None
-        self.result_file = None
-
-    def set_font_for_column(self):
-        self.pdf.set_font('Arial', 'B', 16)
-
-    def set_font_for_data(self):
-        self.pdf.set_font('Arial', '', 12)
-
-    def create_columns_for_table(self):
-        self.pdf.cell(self.COLUMN_WIDTH, self.ROW_HEIGHT, 'No', self.BORDER)
-        self.pdf.cell(self.COLUMN_WIDTH, self.ROW_HEIGHT, 'First Name', self.BORDER)
-        self.pdf.cell(self.COLUMN_WIDTH, self.ROW_HEIGHT, 'Last Name', self.BORDER)
-        self.pdf.cell(self.COLUMN_WIDTH, self.ROW_HEIGHT, 'Score', self.BORDER)
-        self.pdf.ln(10)
-
-    async def draw_one_line_of_data(self, number, attempt):
-        user_data = await get_user_data(user_id=attempt.user_id, async_session_maker=self.session)
-        self.pdf.cell(self.COLUMN_WIDTH, self.ROW_HEIGHT, str(number), self.BORDER)
-        self.pdf.cell(self.COLUMN_WIDTH, self.ROW_HEIGHT, user_data.username, self.BORDER)
-        self.pdf.cell(self.COLUMN_WIDTH, self.ROW_HEIGHT, user_data.lastname, self.BORDER)
-        self.pdf.cell(self.COLUMN_WIDTH, self.ROW_HEIGHT, str(attempt.score), self.BORDER)
-        self.pdf.ln(10)
-
-    async def draw_all_user_data(self):
-        for number, user in enumerate(self.data, start=1):
-            await self.draw_one_line_of_data(number, user)
-
-    def prepare_pdf_output(self):
-        self.result_file = BufferedInputFile(self.pdf.output(dest='S'), filename='results.pdf')
-
-    async def create_pdf_table(self):
-        self.pdf.add_page()
-        self.set_font_for_column()
-        self.create_columns_for_table()
-        self.set_font_for_data()
-        await self.draw_all_user_data()
-        self.prepare_pdf_output()
-
-
 async def test_results_message_parts(test_id: int, session: AsyncSession, redis: Redis) -> list:
     test_info = await get_test_info(test_id, async_session_maker=session, redis=redis)
 
