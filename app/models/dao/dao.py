@@ -136,6 +136,8 @@ class UserDAO(BaseDAO):
             else:
                 test_results['wrong_answers'] += 1
 
+        test_results['score'] = round(test_results['score'], 3)
+
         test_attempt = TestAttempt(
             test_id=user_test_data.test_id,
             tg_user_id=user_test_data.user_id,
