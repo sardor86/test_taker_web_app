@@ -56,6 +56,9 @@ DB_PASSWORD=db_password
 
 REDIS_HOST=localhost
 REDIS_PORT=6379
+REDIS_PASSWORD=redis_password
+REDIS_USER=redis_user
+REDIS_USER_PASSWORD=redis_user_password
 
 BASE_URL=https://jahongiracademy.uz
 BOT_TOKEN=123456789:bot_token
@@ -75,6 +78,9 @@ DB_PASSWORD=
 
 REDIS_HOST=
 REDIS_PORT=
+REDIS_PASSWORD=
+REDIS_USER=
+REDIS_USER_PASSWORD=
 
 BASE_URL=https://jahongiracademy.uz
 BOT_TOKEN=123456789:bot_token
