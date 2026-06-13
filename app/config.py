@@ -15,8 +15,12 @@ class Settings:
     DB_HOST: str
     DB_PORT: int
     DB_NAME: str
+
     REDIS_HOST: str
     REDIS_PORT: int
+    REDIS_PASSWORD: str
+    REDIS_USER: str
+    REDIS_USER_PASSWORD: str
 
     BOT_TOKEN: str
     BASE_URL: str
@@ -49,8 +53,13 @@ def load_config(path: Path) -> Settings:
         DB_PASSWORD=env.str('DB_PASSWORD'),
         DB_NAME=env.str('DB_NAME'),
         DB_PORT=env.int('DB_PORT'),
+
         REDIS_HOST=env.str('REDIS_HOST'),
         REDIS_PORT=env.int('REDIS_PORT'),
+        REDIS_PASSWORD=env.str('REDIS_PASSWORD'),
+        REDIS_USER=env.str('REDIS_USER'),
+        REDIS_USER_PASSWORD=env.str('REDIS_USER_PASSWORD'),
+
         BOT_TOKEN=env.str('BOT_TOKEN'),
         BASE_URL=env.str('BASE_URL'),
         ADMIN_ID=env.str('ADMIN_ID'),

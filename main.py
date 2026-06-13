@@ -35,7 +35,11 @@ async def lifespan(app: FastAPI):
     app.async_session_maker = async_session_maker
 
     # redis preparation
-    redis = await Redis(host=config.REDIS_HOST, port=config.REDIS_PORT, db=0)
+    redis = await Redis(host=config.REDIS_HOST,
+                        port=config.REDIS_PORT,
+                        db=0,
+                        username=config.REDIS_USER,
+                        password=config.REDIS_USER_PASSWORD)
     app.redis = redis
 
     # tg bot preparation
