@@ -6,13 +6,12 @@ from app.models.dao.base import connection
 from app.models.manager import ManagerFabric
 from app.models.dao.test import TestData, TestDao
 from app.models.dao.test import QuestionData, QuestionDao
-from app.models.dao import UserData, UserDao
-from app.models.models import Test, TestAttempt
-from app.models.test_attempt_manager import AttemptAggregateData, TestAttemptManager
+from app.models.models import Test, TestAttempt, User
+from models.manager.test_attempt_manager import AttemptAggregateData, TestAttemptManager
 
 
 class TestAggregateData(BaseModel):
-    user: UserData
+    user: User
     test: TestData
     question: list[QuestionData]
 
@@ -20,23 +19,11 @@ class TestAggregateData(BaseModel):
 class TestManager(ManagerFabric):
     test = None
 
-    async def add_and_set_questions(self, question_list: list[QuestionData], session: AsyncSession):
-        question_model_list = await QuestionDao().add_many(question_list, session=session)
-        self.test.question = question_model_list
-
-    async def add_and_set_test(self, test: TestData, session: AsyncSession):
-        test = await TestDao().add(**test.model_dump(), session=session)
-        self.test = test
-
-    async def add_and_set_user(self, user: UserData, session: AsyncSession):
-        user = await UserDao().add(**user.model_dump(), session=session)
-        self.test.user = user
-
     @connection
     async def create_test(self, test_create_data: TestAggregateData, session: AsyncSession) -> int:
-        await self.add_and_set_test(test_create_data.test, session)
-        await self.add_and_set_user(test_create_data.user, session)
-        await self.add_and_set_questions(test_create_data.question, session)
+        self.test = await TestDao().add(**test_create_data.test.model_dump(), session=session)
+        self.test.user = test_create_data.user
+        self.test.question = await QuestionDao().add_many(test_create_data.question, session=session)
 
         await self.commit(session)
         return self.test.id
@@ -48,10 +35,10 @@ class TestManager(ManagerFabric):
         return test_info
 
     @classmethod
-    def get_test_aggregate(cls, test_info):
+    def get_test_aggregate(cls, test_info: Test):
         test_aggregate_data = TestAggregateData(
             test=TestData.from_orm(test_info),
-            user=UserData.from_orm(test_info.user),
+            user=test_info.user,
             question=[QuestionData.from_orm(question) for question in test_info.question]
         )
         return test_aggregate_data
@@ -69,5 +56,5 @@ class TestManager(ManagerFabric):
 
     @connection
     async def get_test_results(self, test_id: int, session: AsyncSession) -> list[AttemptAggregateData]:
-        attempt_info = self.get_test_attempts_from_db(test_id, session)
+        attempt_info = await self.get_test_attempts_from_db(test_id, session)
         return [TestAttemptManager.get_attempt_aggregate(attempt) for attempt in attempt_info]
