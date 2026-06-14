@@ -43,19 +43,20 @@ class User(Base):
     lastname: Mapped[str] = mapped_column(String(50))
     city: Mapped[str] = mapped_column(String(50), nullable=False)
     tg_user_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
-    is_creator: Mapped[bool] = mapped_column(default=False)
 
     test_attempt: Mapped['TestAttempt'] = relationship(
         'TestAttempt',
         back_populates='user',
-        uselist=False,
+        cascade='all, delete-orphan',
+        uselist=True,
         lazy='joined',
     )
 
     test: Mapped['Test'] = relationship(
         'Test',
         back_populates='user',
-        uselist=False,
+        cascade='all, delete-orphan',
+        uselist=True,
         lazy='joined'
     )
 

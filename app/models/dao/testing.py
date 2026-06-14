@@ -3,7 +3,7 @@ import asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from app.models.dao import QuestionData, TestData, UserData
-from app.models.test_manager import TestManager, TestAggregateData
+from models.manager.test_manager import TestManager, TestAggregateData
 
 from app.config import load_config, PATH
 
@@ -20,8 +20,7 @@ async def create_test():
         'username': 'Sardor',
         'lastname': 'Shavkatov',
         'city': 'Tashkent',
-        'tg_user_id': '12345567',
-        'is_creator': True
+        'tg_user_id': '12345567'
     }
 
     question_data = [

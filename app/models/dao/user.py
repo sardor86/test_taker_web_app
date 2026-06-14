@@ -9,7 +9,6 @@ class UserData(BaseModel):
     lastname: str
     city: str
     tg_user_id: int
-    is_creator: bool
 
     model_config = ConfigDict(from_attributes=True)
 
